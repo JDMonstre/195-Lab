@@ -30,9 +30,7 @@ Strain = n.iloc[:,1]/61
 Stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
 # Plotting Stress Strain curve
 fig, ax = plt.subplots()
-ax.scatter(Strain, Stress)
-plt.xlim(0)
-plt.ylim(0)
+ax.scatter(Strain, Stress, label = 'Curve')
 
 # Ultimate tensile strength
 Ultimate_Tensile = np.max(Stress)
@@ -46,48 +44,181 @@ Mask = (Strain >= Strain_min) & (Strain <= Strain_max)
 # Applying mask to data to select linear region
 Strain_selected = Strain[Mask]
 Stress_selected = Stress[Mask]
-# Slope + Intercept of region
+# Linear regression of selected region
 slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected)
+# 
+x_fit = np.linspace(0, 0.8* Strain.max(), 100)  # 100 points between 0 and max of strain
+y_fit = slope*x_fit + intercept
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
-plt.title('Untempered')
-ax.set_xlabel('Strain')
-ax.set_ylabel('Stress (MPa)')
-plt.plot(Stress, intercept + slope * Stress, 'r', label=f'Linear fit (E = {slope:.2f})')
 
-print(f"Young's modulus: {slope}")
+# General graph stuff
+plt.xlim(0)
+plt.ylim(0)
+plt.title('Quenched 4130 Steel')
+ax.set_xlabel('Engineering Strain')
+ax.set_ylabel('Engineering Stress (MPa)')
+plt.legend()
 
-#%% Calculating 370 data
+print(f"Young's modulus: {slope/1E3:.2f} GPa")
+
+#%% Calculating 210 data
 
 n = data[1]
-x = n.iloc[:,1]
-y = n.iloc[:,2]
+Strain = n.iloc[:,1]/61
+Stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
+# Plotting Stress Strain curve
 fig, ax = plt.subplots()
-ax.scatter(x, y)
-plt.title('370 C temper')
-ax.set_xlabel('Extension (mm)')
-ax.set_ylabel('Load (N)')
+ax.scatter(Strain, Stress, label = 'Curve')
+
+# Ultimate tensile strength
+Ultimate_Tensile = np.max(Stress)
+
+
+# Selecting linear area of stress strain curve
+Strain_min = 0.02
+Strain_max = 0.05
+# Creating a mask of indexes where Max>Strain>Min = True
+Mask = (Strain >= Strain_min) & (Strain <= Strain_max)
+# Applying mask to data to select linear region
+Strain_selected = Strain[Mask]
+Stress_selected = Stress[Mask]
+# Linear regression of selected region
+slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected)
+# 
+x_fit = np.linspace(0, 0.6* Strain.max(), 100)  # 100 points between 0 and max of strain
+y_fit = slope*x_fit + intercept
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+
+
+# General graph stuff
+plt.xlim(0)
+plt.ylim(0)
+plt.title('210 C tempered 4130 Steel')
+ax.set_xlabel('Engineering Strain')
+ax.set_ylabel('Engineering Stress (MPa)')
+plt.legend()
+
+print(f"Young's modulus: {slope/1E3:.2f} GPa")
+
+
+#%% Calculating 370 C
+
+n = data[2]
+Strain = n.iloc[:,1]/61
+Stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
+# Plotting Stress Strain curve
+fig, ax = plt.subplots()
+ax.scatter(Strain, Stress, label = 'Curve')
+
+# Ultimate tensile strength
+Ultimate_Tensile = np.max(Stress)
+
+
+# Selecting linear area of stress strain curve
+Strain_min = 0.01
+Strain_max = 0.045
+# Creating a mask of indexes where Max>Strain>Min = True
+Mask = (Strain >= Strain_min) & (Strain <= Strain_max)
+# Applying mask to data to select linear region
+Strain_selected = Strain[Mask]
+Stress_selected = Stress[Mask]
+# Linear regression of selected region
+slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected)
+# 
+x_fit = np.linspace(0, 0.6* Strain.max(), 100)  # 100 points between 0 and max of strain
+y_fit = slope*x_fit + intercept
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+
+
+# General graph stuff
+plt.xlim(0)
+plt.ylim(0)
+plt.title('370 C tempered 4130 Steel')
+ax.set_xlabel('Engineering Strain')
+ax.set_ylabel('Engineering Stress (MPa)')
+plt.legend()
+
+print(f"Young's modulus: {slope/1E3:.2f} GPa")
 
 #%% Calculating 440 C
 
-n = data[2]
-x = n.iloc[:,1]
-y = n.iloc[:,2]
-fig, ax = plt.subplots()
-ax.scatter(x, y)
-plt.title('449 C temper')
-ax.set_xlabel('Extension (mm)')
-ax.set_ylabel('Load (N)')
-
-#%% Calculating 677 C
-
 n = data[3]
-x = n.iloc[:,1]
-y = n.iloc[:,2]
+Strain = n.iloc[:,1]/61
+Stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
+# Plotting Stress Strain curve
 fig, ax = plt.subplots()
-ax.scatter(x, y)
-plt.title('677 C temper')
-ax.set_xlabel('Extension (mm)')
-ax.set_ylabel('Load (N)')
+ax.scatter(Strain, Stress, label = 'Curve')
+
+# Ultimate tensile strength
+Ultimate_Tensile = np.max(Stress)
+
+
+# Selecting linear area of stress strain curve
+Strain_min = 0.02
+Strain_max = 0.035
+# Creating a mask of indexes where Max>Strain>Min = True
+Mask = (Strain >= Strain_min) & (Strain <= Strain_max)
+# Applying mask to data to select linear region
+Strain_selected = Strain[Mask]
+Stress_selected = Stress[Mask]
+# Linear regression of selected region
+slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected)
+# 
+x_fit = np.linspace(0, 0.4* Strain.max(), 100)  # 100 points between 0 and max of strain
+y_fit = slope*x_fit + intercept
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+
+
+# General graph stuff
+plt.xlim(0)
+plt.ylim(0)
+plt.title('440 C tempered 4130 Steel')
+ax.set_xlabel('Engineering Strain')
+ax.set_ylabel('Engineering Stress (MPa)')
+plt.legend()
+
+print(f"Young's modulus: {slope/1E3:.2f} GPa")
+
+
+#%% Calculating 670 C
+
+n = data[4]
+Strain = n.iloc[:,1]/61
+Stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
+# Plotting Stress Strain curve
+fig, ax = plt.subplots()
+ax.scatter(Strain, Stress, label = 'Curve')
+
+# Ultimate tensile strength
+Ultimate_Tensile = np.max(Stress)
+
+
+# Selecting linear area of stress strain curve
+Strain_min = 0.02
+Strain_max = 0.025
+# Creating a mask of indexes where Max>Strain>Min = True
+Mask = (Strain >= Strain_min) & (Strain <= Strain_max)
+# Applying mask to data to select linear region
+Strain_selected = Strain[Mask]
+Stress_selected = Stress[Mask]
+# Linear regression of selected region
+slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected)
+# 
+x_fit = np.linspace(0, 0.2* Strain.max(), 100)  # 100 points between 0 and max of strain
+y_fit = slope*x_fit + intercept
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+
+
+# General graph stuff
+plt.xlim(0)
+plt.ylim(0)
+plt.title('670 C tempered 4130 Steel')
+ax.set_xlabel('Engineering Strain')
+ax.set_ylabel('Engineering Stress (MPa)')
+plt.legend()
+
+print(f"Young's modulus: {slope/1E3:.2f} GPa")
 
 #%% Combined Plot
 
@@ -96,18 +227,18 @@ test = 0
 labels = ['Untempered','677 C', '440 C', '370 C', '210 C']
 # Dimensions of test = 9.83 mm x 3.19 mm x 61-83mm (depends on where it is)
 for n in data:
-    # Extension in mm
-    x = n.iloc[:,1]
+    # Strain
+    x = n.iloc[:,1]/61
     # Force divided by crosssectional area in m2 divided by 10E6 for megapascal
     y = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
     plt.plot(x, y , label = labels[test]) 
     # integrating below the curve in order to calculate toughness
     integral_trapz = round(np.trapz(y, x),2)
-    print(f"Toughness of {labels[test]} using the trapezoidal rule: {integral_trapz}")
+    # print(f"Toughness of {labels[test]} using the trapezoidal rule: {integral_trapz}")
     test +=1
 
-plt.xlabel("Extension (mm)")
-plt.ylabel("Load (MPa)")
+plt.xlabel("Engineering Strain")
+plt.ylabel("Engineering Stress (MPa)")
 plt.title('Stress Strain Curve')
 plt.legend()
 plt.xlim(0)
