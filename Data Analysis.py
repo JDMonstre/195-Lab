@@ -19,8 +19,9 @@ data = []
 files = sorted(files)
 for n in files:
     data.append(pd.read_csv(str(n), skiprows = 6))
+    print(str(n))
 
-#%% Calculating data Untempered  data
+#%% Untempered  data
 
 # first column is time, second is extension [mm], third is load [N] 
 
@@ -45,12 +46,16 @@ Mask = (Strain >= Strain_min) & (Strain <= Strain_max)
 Strain_selected = Strain[Mask]
 Stress_selected = Stress[Mask]
 # Linear regression of selected region
-slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected)
-# 
+slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected) 
 x_fit = np.linspace(0, 0.8* Strain.max(), 100)  # 100 points between 0 and max of strain
 y_fit = slope*x_fit + intercept
-plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
+# .2% offset method
+intercept_offset = -(0.002 * slope)
+y_offset = slope*x_fit + intercept_offset
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
+# Calculating the .2% offset yield strength
 
 # General graph stuff
 plt.xlim(0)
@@ -89,6 +94,11 @@ slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress
 x_fit = np.linspace(0, 0.6* Strain.max(), 100)  # 100 points between 0 and max of strain
 y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+
+# Offset method
+intercept_offset = -(0.002 * slope)
+y_offset = slope*x_fit + intercept_offset
+plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 
 # General graph stuff
@@ -130,6 +140,10 @@ x_fit = np.linspace(0, 0.6* Strain.max(), 100)  # 100 points between 0 and max o
 y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
+# Offset method stuff
+intercept_offset = -(0.002 * slope)
+y_offset = slope*x_fit + intercept_offset
+plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 # General graph stuff
 plt.xlim(0)
@@ -169,6 +183,11 @@ x_fit = np.linspace(0, 0.4* Strain.max(), 100)  # 100 points between 0 and max o
 y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
+
+# Offset method stuff
+intercept_offset = -(0.002 * slope)
+y_offset = slope*x_fit + intercept_offset
+plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 # General graph stuff
 plt.xlim(0)
@@ -210,6 +229,11 @@ y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
 
+# Offset method stuff
+intercept_offset = -(0.002 * slope)
+y_offset = slope*x_fit + intercept_offset
+plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
+
 # General graph stuff
 plt.xlim(0)
 plt.ylim(0)
@@ -224,7 +248,7 @@ print(f"Young's modulus: {slope/1E3:.2f} GPa")
 
 plt.figure()
 test = 0
-labels = ['Untempered','677 C', '440 C', '370 C', '210 C']
+labels = ['Untempered','210 C', '310 C', '440 C', '677 C']
 # Dimensions of test = 9.83 mm x 3.19 mm x 61-83mm (depends on where it is)
 for n in data:
     # Strain
