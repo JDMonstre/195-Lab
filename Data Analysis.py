@@ -19,7 +19,7 @@ data = []
 files = sorted(files)
 for n in files:
     data.append(pd.read_csv(str(n), skiprows = 6))
-    print(str(n))
+    #print(str(n))
 
 #%% Untempered  data
 
@@ -49,11 +49,16 @@ Stress_selected = Stress[Mask]
 slope, intercept, r_value, p_value, std_err = linregress(Strain_selected, Stress_selected) 
 x_fit = np.linspace(0, 0.8* Strain.max(), 100)  # 100 points between 0 and max of strain
 y_fit = slope*x_fit + intercept
+# Plotting the linear fit
+plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+
 
 # .2% offset method
+# calculating the offset required to add .002
 intercept_offset = -(0.002 * slope)
-y_offset = slope*x_fit + intercept_offset
-plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
+# adding that offset to the current intercept to generate .002 offset
+y_offset = slope*x_fit + intercept_offset + intercept
+# Plotting the offset curve
 plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 # Calculating the .2% offset yield strength
 
@@ -95,9 +100,12 @@ x_fit = np.linspace(0, 0.6* Strain.max(), 100)  # 100 points between 0 and max o
 y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
-# Offset method
+# .2% offset method
+# calculating the offset required to add .002
 intercept_offset = -(0.002 * slope)
-y_offset = slope*x_fit + intercept_offset
+# adding that offset to the current intercept to generate .002 offset
+y_offset = slope*x_fit + intercept_offset + intercept
+# Plotting the offset curve
 plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 
@@ -140,9 +148,12 @@ x_fit = np.linspace(0, 0.6* Strain.max(), 100)  # 100 points between 0 and max o
 y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
-# Offset method stuff
+# .2% offset method
+# calculating the offset required to add .002
 intercept_offset = -(0.002 * slope)
-y_offset = slope*x_fit + intercept_offset
+# adding that offset to the current intercept to generate .002 offset
+y_offset = slope*x_fit + intercept_offset + intercept
+# Plotting the offset curve
 plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 # General graph stuff
@@ -184,9 +195,12 @@ y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
 
-# Offset method stuff
+# .2% offset method
+# calculating the offset required to add .002
 intercept_offset = -(0.002 * slope)
-y_offset = slope*x_fit + intercept_offset
+# adding that offset to the current intercept to generate .002 offset
+y_offset = slope*x_fit + intercept_offset + intercept
+# Plotting the offset curve
 plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 # General graph stuff
@@ -229,9 +243,12 @@ y_fit = slope*x_fit + intercept
 plt.plot(x_fit, y_fit, 'r', label=f'Linear fit (E = {slope/1E3:.2f} GPa)')
 
 
-# Offset method stuff
+# .2% offset method
+# calculating the offset required to add .002
 intercept_offset = -(0.002 * slope)
-y_offset = slope*x_fit + intercept_offset
+# adding that offset to the current intercept to generate .002 offset
+y_offset = slope*x_fit + intercept_offset + intercept
+# Plotting the offset curve
 plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
 
 # General graph stuff
@@ -243,6 +260,7 @@ ax.set_ylabel('Engineering Stress (MPa)')
 plt.legend()
 
 print(f"Young's modulus: {slope/1E3:.2f} GPa")
+
 
 #%% Combined Plot
 
