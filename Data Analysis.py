@@ -33,6 +33,8 @@ Stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
 fig, ax = plt.subplots()
 ax.scatter(Strain, Stress, label = 'Curve')
 
+
+
 # Ultimate tensile strength
 Ultimate_Tensile = np.max(Stress)
 
