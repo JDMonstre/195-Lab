@@ -89,17 +89,16 @@ for index, value in enumerate(data):
 #%% Combined Plot
 
 plt.figure()
-test = 0
 labels = ['Untempered','210 C', '310 C', '440 C', '677 C']
 # Dimensions of test = 9.83 mm x 3.19 mm x 61-83mm (depends on where it is)
-for n in data:
+for index, value in enumerate(data):
+    n = value
     strain = n.iloc[:,1]/61
     stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
-    plt.plot(strain, stress , label = labels[test]) 
+    plt.plot(strain, stress , label = labels[index]) 
     # integrating below the curve in order to calculate toughness
-    integral_trapz = round(np.trapz(strain, stress),2)
-    # print(f"Toughness of {labels[test]} using the trapezoidal rule: {integral_trapz}")
-    test +=1
+    integral_trapz = round(np.trapz(stress, strain),2)
+    print(f"Toughness of {labels[index]} using the trapezoidal rule: {integral_trapz}")
 
 plt.xlabel("Engineering Strain")
 plt.ylabel("Engineering Stress (MPa)")

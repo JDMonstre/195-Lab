@@ -278,7 +278,7 @@ for n in data:
     plt.plot(x, y , label = labels[test]) 
     # integrating below the curve in order to calculate toughness
     integral_trapz = round(np.trapz(y, x),2)
-    # print(f"Toughness of {labels[test]} using the trapezoidal rule: {integral_trapz}")
+    print(f"Toughness of {labels[test]} using the trapezoidal rule: {integral_trapz}")
     test +=1
 
 plt.xlabel("Engineering Strain")
