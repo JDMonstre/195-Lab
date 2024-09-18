@@ -42,10 +42,13 @@ for index, value in enumerate(data):
     # Select region to be plus minus 250 datapoints from 1/2 max
     start, end = elastic-200, elastic+200
     # linear regression
-    slope, intercept, r_value, p_value, std_err = linregress(strain[start:end], stress[start:end])
+    slope, intercept, r_value, p_value, std_err = linregress(strain[start:end],
+                                                             stress[start:end])
     # Generating points along linear regression corresponding to the length of strain
     x_fit = np.linspace(0, strain.max(), len(strain))
     y_fit = slope*x_fit + intercept
+    x_intercept = (-intercept/slope)
+
     
     # .2% offset method
     # calculating the offset required to add .002
@@ -53,14 +56,6 @@ for index, value in enumerate(data):
     # adding that offset to the current intercept to generate .002 offset
     y_offset = slope*x_fit + intercept_offset + intercept
     
-    
-    
-    # calculating the intersection of .2% and Stress/Strain curve
-    # have to interpolate to get intersection
-    #line_interp = interp1d(x_fit, y_offset, kind='linear', fill_value="extrapolate")
-    # Interpolate y_line values at the x_curve points
-    #y_line_interp = line_interp(strain)
-
     # Step 3: Find the differences between the .2% line and the curve
     difference = y_offset - stress
 
@@ -70,14 +65,16 @@ for index, value in enumerate(data):
     
     #Plot the stress-strain curve and highlight the elastic region
     # General plotting stuff
-    plt.plot(strain, stress, label='Stress-Strain Curve')
-    plt.scatter(strain[indices[-1]], stress[indices[-1]], color='red', zorder=5)
+    # Subtracting x-intercept of youngs from everything to shift graphs
+    # also not plotting the first 200 points to composite it
+    plt.plot(strain[500:] - x_intercept, stress[500:], label='Stress-Strain Curve')
+    plt.scatter(strain[indices[-1]]-x_intercept, stress[indices[-1]], color='red', zorder=5)
     plt.annotate(f"0.2% offset = {stress[indices[-1]]:.2f} MPa",
-                 (strain[indices[-1]], stress[indices[-1]]),
-                 xytext=(strain[indices[-1]]+.01, stress[indices[-1]]-100),
+                 (strain[indices[-1]]-x_intercept, stress[indices[-1]]),
+                 xytext=(strain[indices[-1]]+.01 - x_intercept, stress[indices[-1]]-100),
                  arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
-    plt.plot(x_fit, y_fit, 'r', label=f'Youngs Modulus E = {slope/1E3:.2f} MPa \n R-squared : {r_value**2:.3f}')
-    plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
+    plt.plot(x_fit - x_intercept, y_fit, 'r', label=f'Youngs Modulus E = {slope/1E3:.2f} MPa \n R-squared : {r_value**2:.3f}')
+    plt.plot(x_fit - x_intercept, y_offset, 'y', label = '.2% Offset ')
     plt.xlabel('Strain')
     plt.ylabel('Stress (MPa)')
     plt.title(names[index])
@@ -85,6 +82,8 @@ for index, value in enumerate(data):
     plt.ylim(0, 1.1*stress.max())
     plt.legend()
     plt.show()
+
+
 
 #%% Combined Plot
 
