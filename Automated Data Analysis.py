@@ -71,11 +71,15 @@ for index, value in enumerate(data):
     #Plot the stress-strain curve and highlight the elastic region
     # General plotting stuff
     plt.plot(strain, stress, label='Stress-Strain Curve')
-    plt.scatter(strain[indices[-1]], stress[indices[-1]], color='red', zorder=5, label='Intersections')
-    plt.plot(x_fit, y_fit, 'r', label=f'Youngs Modulus E = {slope/1E3:.2f} GPa \n R-squared : {r_value**2:.3f}')
+    plt.scatter(strain[indices[-1]], stress[indices[-1]], color='red', zorder=5)
+    plt.annotate(f"0.2% offset = {stress[indices[-1]]:.2f} MPa",
+                 (strain[indices[-1]], stress[indices[-1]]),
+                 xytext=(strain[indices[-1]]+.01, stress[indices[-1]]-100),
+                 arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
+    plt.plot(x_fit, y_fit, 'r', label=f'Youngs Modulus E = {slope/1E3:.2f} MPa \n R-squared : {r_value**2:.3f}')
     plt.plot(x_fit, y_offset, 'y', label = '.2% Offset ')
     plt.xlabel('Strain')
-    plt.ylabel('Stress')
+    plt.ylabel('Stress (MPa)')
     plt.title(names[index])
     plt.xlim(0)
     plt.ylim(0, 1.1*stress.max())
@@ -83,3 +87,23 @@ for index, value in enumerate(data):
     plt.show()
 
 #%% Combined Plot
+
+plt.figure()
+test = 0
+labels = ['Untempered','210 C', '310 C', '440 C', '677 C']
+# Dimensions of test = 9.83 mm x 3.19 mm x 61-83mm (depends on where it is)
+for n in data:
+    strain = n.iloc[:,1]/61
+    stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
+    plt.plot(strain, stress , label = labels[test]) 
+    # integrating below the curve in order to calculate toughness
+    integral_trapz = round(np.trapz(strain, stress),2)
+    # print(f"Toughness of {labels[test]} using the trapezoidal rule: {integral_trapz}")
+    test +=1
+
+plt.xlabel("Engineering Strain")
+plt.ylabel("Engineering Stress (MPa)")
+plt.title('Stress Strain Curve')
+plt.legend()
+plt.xlim(0)
+plt.ylim(0)
