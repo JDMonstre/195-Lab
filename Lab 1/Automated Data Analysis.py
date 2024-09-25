@@ -158,3 +158,19 @@ plt.legend()
 plt.xlim(0)
 plt.ylim(0)
 plt.show()
+
+#%% Plotting the temperature vs 0.2 yield
+
+offset_yield = [1042.14, 769.25, 806.46, 510.05, 1216.05]
+temperatures = [210, 370, 440, 677, 0]
+
+plt.scatter(temperatures, offset_yield)
+plt.xlabel('Temperature (C)')
+plt.ylabel('0.2 offset yield strength (MPa)')
+plt.title('0.2 offset yield strength vs temper temperature')
+plt.annotate("Quenched @ 810 C but not tempered",
+             (temperatures[-1]+10, offset_yield[-1]),
+             xytext=(temperatures[-1]+100, offset_yield[-1]-10),
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
+plt.show()
+
