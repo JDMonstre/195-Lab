@@ -15,77 +15,65 @@ from scipy.stats import linregress
 from scipy.interpolate import interp1d
 
 #%%Importing the data
-location = ('Lab 2')
+location = ('C:/Users/jossd/195 Lab/Lab 2')
 full = str(location) + '/'+ '*.csv'
 files = glob.glob(full)
-data = []
+raw_data = []
 files = sorted(files)
 for n in files:
-    data.append(pd.read_csv(str(n), skiprows = 6))
+    raw_data.append(pd.read_csv(str(n), skiprows = 6))
     #print(str(n))
-names = ['Specimen 1', 'Specimen 2 Cycled', 'Specimen 2 Failure','Specimen 3 cycle', 'Specimen 3 fail']
-# creating the figure
-
-
-#%% Untempered  data
-
-# first column is time, second is extension [mm], third is load [N] 
-
-n = data[0]
-# Converting raw data into Stress/Strain
-strain = n.iloc[:,1]/61
-stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
-
-# Step 1: Define a curve (x_curve, y_curve) and a line (x_line, y_line)
-
-
-x_offset = np.linspace(-8, 8, 30)  # 30 points for the line
-m = 16000  # Slope
-b = -200  # Intercept
-y_offset = m * x_offset + b  # Line: y = mx + b
-
-# Step 2: Interpolate the curve or the line to have a common set of x values
-# We'll interpolate the line to match the x values of the curve
-line_interp = interp1d(x_offset, y_offset, kind='linear', fill_value="extrapolate")
-
-# Interpolate y_line values at the x_curve points
-y_line_interp = line_interp(strain)
-
-# Step 3: Find the differences between the interpolated line and the curve
-difference = stress - y_line_interp
-
-# Step 4: Find where the difference changes sign (indicating an intersection)
-indices = np.where(np.diff(np.sign(difference)))[0]
-
-# Step 5: For more precise intersection points, you can use interpolation or a numerical solver
-
-# Step 6: Plot for visualization
-plt.plot(strain, stress, label="Curve: $y = x^2$")
-plt.plot(strain, y_line_interp, label="Interpolated Line: $y = mx + b$")
-plt.scatter(strain[indices], stress[indices], color='red', zorder=5, label='Intersections')
-plt.legend()
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Intersection of Line and Curve with Different Sizes')
-plt.grid(True)
-plt.show()
-
-# Print intersection points
-for index in indices:
-    print(f"Intersection point: x = {strain[index]:.2f}, y = {stress[index]:.2f}")
-
     
+
+
+#%% Cleaning the data
+# Sticking everying in a dictionary with Name Area, height
+# keeps things tidier instead of having variables all over the place
+
+samples = { 
+    'Specimen 1': (3.26/1000 * 13.19/1000, 65/1000),
+    'Specimen 2 cycle': (3.24/1000 * 13.18/1000,65/1000), 
+    'Specimen 2 failure': (3.14/1000 * 12.87/1000, 72.66/1000), 
+    'Specimen 3 cycle': (3.23/1000 * 13.27/1000, 72.66/1000),
+    'Specimen 3 failure': (3.03/1000 * 12.36/1000, 70.42/1000)
+    }
+
+
+
+#%% Converting raw_data to stress_strain dataframe
+
+# Key is the sample name
+# value is strain - stress tuple
+
+processed_data = {}
+
+for index, data in enumerate(raw_data):
+    
+    new_row = {samples[index]:}
+
+
+
+
 #%% Plotting all together
 
 plt.figure()
 
-for n in data:
+for index, data in enumerate(raw_data):
     # Converting raw data into Stress/Strain
-    strain = n.iloc[:,1]/61
-    stress = n.iloc[:,2]/((9.83/1E3)*(3.19/1E3))/1E6
+    strain = data.iloc[:,1]#/61
+    stress = data.iloc[:,2]#/((9.83/1E3)*(3.19/1E3))/1E6
     
-    plt.plot(strain, stress)
+    plt.plot(strain, stress, label = names[index])
+    plt.xlabel('Displacement (mm)')
+    plt.ylabel('Force (N)')
+    plt.legend()
+    
+    
 
 plt.show()
+
+
+
+
     
 

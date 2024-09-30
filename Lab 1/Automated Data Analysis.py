@@ -14,7 +14,7 @@ from scipy.stats import linregress
 from scipy.interpolate import interp1d
 
 #%%Importing the data
-location = ('C:/Users/jossd/195 Lab')
+location = ('C:/Users/jossd/195 Lab/Lab 1')
 full = str(location) + '/'+ '*.csv'
 files = glob.glob(full)
 data = []
@@ -100,7 +100,7 @@ for index, value in enumerate(data):
                  (strain[indices[-1]]-x_intercept, stress[indices[-1]]),
                  xytext=(strain[indices[-1]] - x_intercept, stress[indices[-1]]-0.18*stress.max()),
                  arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
-    plt.plot(x_fit - x_intercept, y_fit, 'r', label=f'Youngs Modulus E = {slope/1E3:.2f} MPa \n R-squared : {r_value**2:.3f}')
+    plt.plot(x_fit - x_intercept, y_fit, 'r', label=f'Youngs Modulus E = {slope/1E3:.2f} GPa \n R-squared : {r_value**2:.3f}')
     plt.plot(x_fit - x_intercept, y_offset, 'y', label = '.2% Offset ')
     plt.scatter(ult_yield_strain-x_intercept, ult_yield, color='green', zorder=5)
     plt.annotate(f"Ultimate yield \n {ult_yield:.2f} MPa",
@@ -174,3 +174,19 @@ plt.annotate("Quenched @ 810 C but not tempered",
              arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
 plt.show()
 
+
+#%% Plotting the temperature vs Youngs
+
+plt.figure()
+youngs = [19.14, 18.14, 18.25, 17.39, 19.25]
+temperatures = [210, 370, 440, 677, 0]
+
+plt.scatter(temperatures, youngs)
+plt.xlabel('Temperature (C)')
+plt.ylabel('Youngs modulus (GPa)')
+plt.title('Youngs modulus vs temper temperature')
+plt.annotate("Quenched @ 810 C but not tempered",
+             (temperatures[-1]+10, youngs[-1]),
+             xytext=(temperatures[-1]+100, youngs[-1]),
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
+plt.show()
