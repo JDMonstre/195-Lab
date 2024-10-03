@@ -45,32 +45,31 @@ samples = {
 # Key is the sample name
 # value is strain - stress tuple
 
-processed_data = {}
+dataframe = pd.DataFrame(columns=['Name', 'Area', 'Length'
+                                  , 'Stress (MPa)','Strain'])
 
-for index, data in enumerate(raw_data):
+
+for index, value in enumerate(samples):
+    name = value
+    dimensions = samples[value]
+    area = dimensions[0]
+    length = dimensions[1]
+    data = raw_data[index]
+    strain = (data['(mm)']/1000)/length
+    stress = (data['(N)']/area)/1E6
     
-    new_row = {samples[index]:}
+    
+    # combining all the data into a single row
+    dank = [name, area, length, stress, stress]
+    # adding the data to the dataframe
+    dataframe.loc[len(dataframe)] = dank
 
 
 
 
 #%% Plotting all together
 
-plt.figure()
 
-for index, data in enumerate(raw_data):
-    # Converting raw data into Stress/Strain
-    strain = data.iloc[:,1]#/61
-    stress = data.iloc[:,2]#/((9.83/1E3)*(3.19/1E3))/1E6
-    
-    plt.plot(strain, stress, label = names[index])
-    plt.xlabel('Displacement (mm)')
-    plt.ylabel('Force (N)')
-    plt.legend()
-    
-    
-
-plt.show()
 
 
 
