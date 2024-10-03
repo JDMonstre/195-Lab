@@ -74,7 +74,7 @@ del raw_data, samples
 
 # adding youngs modulus, intercept, and ultimate tensile to the dataframe
 dataframe['Youngs'] = 'Unknown'
-dataframe['Intercepts'] = 'Unknown'
+dataframe['Y Intercept'] = 'Unknown'
 dataframe['Ultimate'] = 'Unkown'
 # iterating through the rows
 for index, row in dataframe.iterrows():
@@ -90,10 +90,23 @@ for index, row in dataframe.iterrows():
     # slope is the youngs modulus
     slope, intercept, r_value, p_value, std_err = linregress(strain[start:end],
                                                              stress[start:end])
-    # adding the slope and intercept back to the original dataframe
+    # Subtracting the x intercept of the youngs modulus line so that
+    # everything goes through (0,0)
+    # Finding x intercept
+    # y=mx+b  -> 0 = (slope)*x + intercept
+    
+    # - intercept/slope = x
+    offset = -intercept/slope
+    # adding the offset to the strain to set to (0,0)
+    strain = strain - offset
+    
+    # pushing everything to the dataframe
     dataframe.at[index, 'Youngs'] = slope
-    dataframe.at[index, 'Intercepts'] = intercept
+    # everything should be going through (0,0) so I can hardcode it
+    dataframe.at[index, 'Y Intercept'] = 0
     dataframe.at[index, 'Ultimate'] = ultimate
+    dataframe.at[index, 'Strain'] = strain
+    
     
     # clearing variables to clean up IDE
     del stress, strain, ultimate, elastic_mid, start, end, slope, intercept,
@@ -102,7 +115,44 @@ for index, row in dataframe.iterrows():
     
     pass
 
+#%% 0.02 offset calculations
 
+# initializing the yield strength and the offset intercept for future plotting
+dataframe['Yield Strength'] = 'Unknown'
+dataframe['Yield Strain'] = 'Unknown'
+dataframe['Offset intercept'] = 'Unknown'
+
+for index, row in dataframe.iterrows():
+    youngs = row['Youngs']
+    offset = -(youngs*0.002)
+    strain = row['Strain']
+    stress = row['Stress (MPa)']
+    # creating y values to find where the lines intersect
+    x_area = np.linspace(0, max(strain), len(strain))
+    y_line = youngs*x_area + offset
+    
+    # finding the index of the last place where the signs change
+    # subtracting the offset because the data is offset from above
+    data = (y_line - (stress-offset))
+    # making sure that it's the right data type because I am going insane
+    data = data.to_numpy()
+    # returns an array where all the sign changes
+    intercept = np.where(np.diff(np.sign(data)))[-1]
+    # yield strength is the last spot where they change signs thus the [-1]
+    yield_strength = (stress.loc[intercept[-1]])
+    yield_strain = strain.loc[intercept[-1]]
+    
+    dataframe.at[index,'Yield Strength'] = yield_strength
+    dataframe.at[index,'Offset intercept'] = offset
+    dataframe.at[index,'Yield Strain'] = yield_strain
+    pass
+
+
+del youngs, offset, strain, stress, y_line, data, yield_strength, index
+del yield_strain, x_area, intercept
+#%% yield strength and plastic 
+
+# Now that I have the youngs modulus I can calculate the yield strength
 
 
 #%% plotting combined
@@ -110,19 +160,55 @@ for index, row in dataframe.iterrows():
 plt.figure()
 
 for index, row in dataframe.iterrows():
-    x = row['Strain']
-    y = row['Stress (MPa)']
+    x_curve = row['Strain']
+    y_curve = row['Stress (MPa)']
     sample = row['Name']
-    plt.plot(x, y, label=sample)
+    youngs = row['Youngs']
+    y_intercept = row['Y Intercept']
     
+    x_line = np.linspace(0, 0.5, 100)
+    y_line = youngs*x_line - y_intercept
+    
+    plt.plot(x_curve, y_curve, label=sample)
+    plt.plot(x_line, y_line, label = f' Youngs modulus of {sample} is {youngs} MPa')
     pass
 
 plt.xlabel("Strain")
 plt.ylabel("Stress (MPa)")
 plt.title('Combined Stress Strain Curves')
-plt.legend()
-plt.xlim(0)
-plt.ylim(0)
+#plt.legend()
+plt.xlim(0, 0.075)
+plt.ylim(0, 500)
 plt.show()
     
 
+
+del x_curve, y_curve, sample, youngs, y_intercept, x_line, y_line, row, index
+
+
+#%% Individual plots
+
+
+for index, row in dataframe.iterrows():
+    plt.figure()
+    x_curve = row['Strain']
+    y_curve = row['Stress (MPa)']
+    sample = row['Name']
+    youngs = row['Youngs']
+    y_intercept = row['Y Intercept']
+    
+    x_line = np.linspace(0, 0.5, 100)
+    y_line = youngs*x_line - y_intercept
+    
+    plt.plot(x_curve, y_curve, label=sample)
+    plt.plot(x_line, y_line, label = f' Youngs modulus of {sample} is {youngs} MPa')
+    plt.xlabel("Strain")
+    plt.ylabel("Stress (MPa)")
+    plt.xlim(0, 0.075)
+    plt.ylim(0, 500)
+    plt.show()
+    pass
+
+
+
+del x_curve, y_curve, sample, youngs, y_intercept, x_line, y_line, row, index
