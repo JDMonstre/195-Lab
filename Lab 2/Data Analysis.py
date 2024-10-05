@@ -32,6 +32,8 @@ del location, full, files
 #%% Cleaning the data and creating a dataframe
 # Sticking everying in a dictionary with Name Area, height
 # keeps things tidier instead of having variables all over the place
+# this ended up being a bad idea but whatever  Should have just put everyting
+# in a pandas array to begin with
 
 samples = { 
     'Specimen 1': (3.26/1000 * 13.19/1000, 65/1000),
@@ -70,12 +72,16 @@ for index, value in enumerate(samples):
 
 del raw_data, samples
 
+dataframe['%'] = [0, 15, 15, 30, 30]
+
+
 #%% Youngs modulus, ultimate tensile strength
 
 # adding youngs modulus, intercept, and ultimate tensile to the dataframe
 dataframe['Youngs'] = 'Unknown'
 dataframe['Y Intercept'] = 'Unknown'
 dataframe['Ultimate'] = 'Unkown'
+dataframe['Ultimate Strain'] = 'Unknown'
 # iterating through the rows
 for index, row in dataframe.iterrows():
     stress = row['Stress (MPa)']
@@ -89,7 +95,10 @@ for index, row in dataframe.iterrows():
     # doing a linear regression
     # slope is the youngs modulus
     slope, intercept, r_value, p_value, std_err = linregress(strain[start:end],
-                                                             stress[start:end])
+                                                            stress[start:end])
+    
+    strain_index = stress.idxmax() if stress.eq(ultimate).any() else None
+    ultimate_strain = strain.iloc[strain_index]
     # Subtracting the x intercept of the youngs modulus line so that
     # everything goes through (0,0)
     # Finding x intercept
@@ -106,14 +115,16 @@ for index, row in dataframe.iterrows():
     dataframe.at[index, 'Y Intercept'] = 0
     dataframe.at[index, 'Ultimate'] = ultimate
     dataframe.at[index, 'Strain'] = strain
+    dataframe.at[index, 'Ultimate Strain'] = ultimate_strain
     
     
     # clearing variables to clean up IDE
-    del stress, strain, ultimate, elastic_mid, start, end, slope, intercept,
-    del r_value, p_value, std_err, row, index
+del stress, strain, ultimate, elastic_mid, start, end, slope, intercept,
+del r_value, p_value, std_err, row, index, strain_index, ultimate_strain
+del offset
     
     
-    pass
+    
 
 #%% 0.02 offset calculations
 
@@ -149,10 +160,63 @@ for index, row in dataframe.iterrows():
 
 
 del youngs, offset, strain, stress, y_line, data, yield_strength, index
-del yield_strain, x_area, intercept
-#%% yield strength and plastic 
+del yield_strain, x_area, intercept, row
+#%% plastic deformation strain
 
-# Now that I have the youngs modulus I can calculate the yield strength
+# calculating the plastic fracture strain (kinda).  I do this for the cycled 
+# samples so that it gives me the offset that I need to add to the fractured
+# samples.  
+
+dataframe['Plastic Strain'] = 'Unknown'
+dataframe['Fracture Stress'] = 'Unknown'
+dataframe['Fracture Strain'] = 'Unknown'
+dataframe['Plastic Offset'] = 'Unknown'
+
+for index, row in dataframe.iterrows():
+    youngs = row['Youngs']
+    stress = row['Stress (MPa)']
+    strain = row['Strain']
+    # the second to last value (avoids the drop off for failure)
+    fracture_stress = stress.iloc[-2]
+    fracture_strain = strain.iloc[-2]
+    # calculating the b of y=mx+b so that it goes through the failure point
+    offset = fracture_stress - youngs*fracture_strain
+    # calculating the x intercept of this new youngs line
+    # 0 = mx + b -> -b/m = x
+    plastic_strain = -offset/youngs
+    dataframe.at[index, 'Plastic Strain'] = plastic_strain
+    dataframe.at[index, 'Fracture Stress'] = fracture_stress
+    dataframe.at[index, 'Fracture Strain'] = fracture_strain
+    dataframe.at[index, 'Plastic Offset'] = offset
+    
+    pass
+
+
+del fracture_strain, fracture_stress, index, offset, plastic_strain
+del row, strain, stress, youngs
+
+
+#%% Specimen 1 final graph
+
+row = dataframe.iloc[0]
+name = row['Name']
+stress = row['Stress (MPa)']
+strain = row['Strain']
+youngs = row['Youngs']
+ultimate_stress = row['Ultimate']
+ultimate_strain = row['Ultimate Strain']
+yield_strength = row['Yield Strength']
+yield_strain = row['Yield Strain']
+offset_intercept = row['Offset intercept']
+plastic_strain = row['Plastic Strain']
+plastic_offset = row['Plastic Offset']
+
+
+plt.figure()
+plt.show()
+
+
+
 
 
 #%% plotting combined
@@ -188,9 +252,9 @@ del x_curve, y_curve, sample, youngs, y_intercept, x_line, y_line, row, index
 
 #%% Individual plots
 
-
 for index, row in dataframe.iterrows():
     plt.figure()
+    title = row['Name']
     x_curve = row['Strain']
     y_curve = row['Stress (MPa)']
     sample = row['Name']
@@ -204,7 +268,8 @@ for index, row in dataframe.iterrows():
     plt.plot(x_line, y_line, label = f' Youngs modulus of {sample} is {youngs} MPa')
     plt.xlabel("Strain")
     plt.ylabel("Stress (MPa)")
-    plt.xlim(0, 0.075)
+    plt.title(title)
+    plt.xlim(0)
     plt.ylim(0, 500)
     plt.show()
     pass
@@ -212,3 +277,6 @@ for index, row in dataframe.iterrows():
 
 
 del x_curve, y_curve, sample, youngs, y_intercept, x_line, y_line, row, index
+del title
+
+#%% Specimen 2 combined
