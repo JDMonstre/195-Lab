@@ -79,7 +79,7 @@ dataframe['%'] = [0, 15, 15, 30, 30]
 
 # adding youngs modulus, intercept, and ultimate tensile to the dataframe
 dataframe['Youngs'] = 'Unknown'
-dataframe['Y Intercept'] = 'Unknown'
+dataframe['Graph Offset'] = 'Unknown'
 dataframe['Ultimate'] = 'Unkown'
 dataframe['Ultimate Strain'] = 'Unknown'
 # iterating through the rows
@@ -97,6 +97,7 @@ for index, row in dataframe.iterrows():
     slope, intercept, r_value, p_value, std_err = linregress(strain[start:end],
                                                             stress[start:end])
     
+    # gives me the location of the ultimate yield strength etc
     strain_index = stress.idxmax() if stress.eq(ultimate).any() else None
     ultimate_strain = strain.iloc[strain_index]
     # Subtracting the x intercept of the youngs modulus line so that
@@ -111,8 +112,8 @@ for index, row in dataframe.iterrows():
     
     # pushing everything to the dataframe
     dataframe.at[index, 'Youngs'] = slope
-    # everything should be going through (0,0) so I can hardcode it
-    dataframe.at[index, 'Y Intercept'] = 0
+    # everything should go through 0,0 but I keep the offset for graphing
+    dataframe.at[index, 'Graph Offset'] = offset
     dataframe.at[index, 'Ultimate'] = ultimate
     dataframe.at[index, 'Strain'] = strain
     dataframe.at[index, 'Ultimate Strain'] = ultimate_strain
@@ -138,20 +139,25 @@ for index, row in dataframe.iterrows():
     offset = -(youngs*0.002)
     strain = row['Strain']
     stress = row['Stress (MPa)']
+    graph_offset = row['Graph Offset']
     # creating y values to find where the lines intersect
     x_area = np.linspace(0, max(strain), len(strain))
-    y_line = youngs*x_area + offset
+    y_line = youngs*x_area + offset + graph_offset
     
     # finding the index of the last place where the signs change
     # subtracting the offset because the data is offset from above
-    data = (y_line - (stress-offset))
+    data = (y_line - (stress - offset))
     # making sure that it's the right data type because I am going insane
     data = data.to_numpy()
     # returns an array where all the sign changes
     intercept = np.where(np.diff(np.sign(data)))[-1]
     # yield strength is the last spot where they change signs thus the [-1]
-    yield_strength = (stress.loc[intercept[-1]])
-    yield_strain = strain.loc[intercept[-1]]
+    # Finding it from the offset graph because taking it from the data gives
+    # me wrong stuff???
+    yield_strength = y_line[intercept[-1]] - stress.iloc[0]
+    # since the strain is shifted left to make the youngs modulus match it
+    # I subtract the [0] strain so that it's the proper value
+    yield_strain = x_area[intercept[-1]] + strain.iloc[0]
     
     dataframe.at[index,'Yield Strength'] = yield_strength
     dataframe.at[index,'Offset intercept'] = offset
@@ -196,7 +202,55 @@ del fracture_strain, fracture_stress, index, offset, plastic_strain
 del row, strain, stress, youngs
 
 
-#%% Specimen 1 final graph
+#%% Specimen 1 zoomed in for offset
+
+row = dataframe.iloc[0]
+name = row['Name']
+stress = row['Stress (MPa)']
+strain = row['Strain']
+youngs = row['Youngs']
+graph_offset = row['Graph Offset']
+ultimate_stress = row['Ultimate']
+ultimate_strain = row['Ultimate Strain']
+yield_strength = row['Yield Strength']
+yield_strain = row['Yield Strain']
+offset_intercept = row['Offset intercept']
+plastic_strain = row['Plastic Strain']
+plastic_offset = row['Plastic Offset']
+
+plt.figure()
+# only plotting from the first 400 points to remove any wacky behavior
+plt.plot(strain.iloc[225:], stress.iloc[225:])
+# generating 100 points from 0 to 0.1 for the x values of the youngs modulus
+x_youngs = np.linspace(0, 0.1 , 100)
+# generating the y values of the youngs modulus line
+y_youngs = youngs * x_youngs
+# plotting the youngs modulus, rounding to nearest whole number
+plt.plot(x_youngs, y_youngs, label = f'Modulus = {youngs:.0f} (MPa)')
+# using the same x values but now to calculate the offset values
+y_offset = x_youngs*youngs+offset_intercept
+# plotting the 0.2% offset line
+plt.plot(x_youngs, y_offset)
+# plotting the 0.2% dot WITH THE ADDED GRAPH OFFSET FROM ABOVE
+plt.scatter(yield_strain - graph_offset, yield_strength)
+
+
+
+
+
+
+plt.title(name)
+plt.xlim(0, yield_strain*1.5)
+# setting the upper bounds as a percentage of the tensile stress
+plt.ylim(0, 1.25*yield_strength)
+plt.legend()
+
+plt.show()
+
+
+
+
+#%% zoomed out specimen 1 graph
 
 row = dataframe.iloc[0]
 name = row['Name']
@@ -211,13 +265,32 @@ offset_intercept = row['Offset intercept']
 plastic_strain = row['Plastic Strain']
 plastic_offset = row['Plastic Offset']
 
-
 plt.figure()
+# only plotting from the first 400 points to remove any wacky behavior
+plt.plot(strain.iloc[400:], stress.iloc[400:])
+# generating 100 points from 0 to 0.1 for the x values of the youngs modulus
+x_youngs = np.linspace(0, 0.1 , 100)
+# generating the y values of the youngs modulus line
+y_youngs = youngs * x_youngs
+# plotting the youngs modulus, rounding to nearest whole number
+plt.plot(x_youngs, y_youngs, label = f'Modulus = {youngs:.0f} (MPa)')
+# using the same x values but now to calculate the offset values
+y_offset = x_youngs*youngs+offset_intercept
+plt.plot(x_youngs, y_offset)
+plt.scatter(ultimate_strain, ultimate_stress)
+
+
+
+
+
+
+plt.title(name)
+plt.xlim(0)
+# setting the upper bounds as a percentage of the tensile stress
+plt.ylim(0, 1.1*ultimate_stress)
+plt.legend()
+
 plt.show()
-
-
-
-
 
 #%% plotting combined
 
