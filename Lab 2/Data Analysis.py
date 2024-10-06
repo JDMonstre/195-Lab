@@ -399,7 +399,7 @@ plt.plot(x_youngs, y_youngs, label = f'Modulus = {youngs:.0f} (MPa)')
 
 plt.scatter(ultimate_strain, ultimate_stress)
 
-plt.annotate(f"Ultimate tensile stress \n {yield_strength:.0f} MPa",
+plt.annotate(f"Ultimate tensile stress \n {ultimate_stress:.0f} MPa",
              (ultimate_strain, ultimate_stress),
              xytext=(ultimate_strain - 0.1*ultimate_strain, 
                      ultimate_stress-.2*ultimate_stress),
