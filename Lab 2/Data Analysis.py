@@ -177,8 +177,8 @@ for index, row in dataframe.iterrows():
     stress = row['Stress (MPa)']
     strain = row['Strain']
     # the second to last value (avoids the drop off for failure)
-    fracture_stress = stress.iloc[-2]
-    fracture_strain = strain.iloc[-2]
+    fracture_stress = stress.iloc[-4]
+    fracture_strain = strain.iloc[-4]
     # calculating the b of y=mx+b so that it goes through the failure point
     offset = fracture_stress - youngs*fracture_strain
     # calculating the x intercept of this new youngs line
@@ -365,7 +365,7 @@ del row, name, stress, strain, youngs, ultimate_strain, ultimate_stress
 del yield_strain, yield_strength, offset_intercept, plastic_offset
 del plastic_strain, work, x_youngs, y_offset, y_youngs
 
-#%% zoomed out specimen 1 graph
+#%% specimen 1 combined
 
 row = dataframe.iloc[0]
 name = row['Name']
@@ -379,14 +379,21 @@ yield_strain = row['Yield Strain']
 offset_intercept = row['Offset intercept']
 plastic_strain = row['Plastic Strain']
 plastic_offset = row['Plastic Offset']
+fracture_strain = row['Fracture Strain']
+fracture_stress = row['Fracture Stress']
 
 plt.figure()
 # only plotting from the first 400 points to remove any wacky behavior
 plt.plot(strain.iloc[400:], stress.iloc[400:])
 # generating 100 points from 0 to 0.1 for the x values of the youngs modulus
-x_youngs = np.linspace(0, 0.1 , 100)
+x_youngs = np.linspace(0, 0.5 , 100)
 # generating the y values of the youngs modulus line
 y_youngs = youngs * x_youngs
+#Total plastic strain stuff
+b_failure = fracture_stress - youngs*fracture_strain
+y_failure = youngs * x_youngs + b_failure
+total_deformation = -b_failure/youngs
+plt.plot(x_youngs, y_failure)
 # plotting the youngs modulus, rounding to nearest whole number
 plt.plot(x_youngs, y_youngs, label = f'Modulus = {youngs:.0f} (MPa)')
 
@@ -399,26 +406,33 @@ plt.annotate(f"Ultimate tensile stress \n {yield_strength:.0f} MPa",
              ha='center',
              arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
 
+plt.annotate(f"Plastic strain \n {total_deformation:.3f}",
+             (total_deformation, 0),
+             xytext=(total_deformation - 0.1*ultimate_strain, 
+                     0.2*ultimate_stress),
+             ha='right',
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
 
 
 
 
 plt.ylabel('Stress (MPa)')
 plt.xlabel('Strain')
-plt.title(name)
+plt.title(f'{name} 0% reduction')
 plt.xlim(0)
 # setting the upper bounds as a percentage of the tensile stress
 plt.ylim(0, 1.1*ultimate_stress)
-plt.legend(loc = 'lower right')
+#plt.legend(loc = 'lower right')
 
 plt.show()
 
 del row, name, stress, strain, youngs, ultimate_strain, ultimate_stress
 del yield_strain, yield_strength, offset_intercept, plastic_offset
-del plastic_strain, x_youngs, y_youngs
+del plastic_strain, x_youngs, y_youngs, b_failure, fracture_strain
+del fracture_stress, total_deformation
 
 
-#%% Specimen 2 combined
+#%% Specimen 2 combined 
 
 cycle = dataframe.iloc[1]
 fail = dataframe.iloc[2]
@@ -430,6 +444,14 @@ fail_strain = fail['Strain']
 youngs = cycle['Youngs']
 plastic_strain = cycle['Plastic Strain']
 ultimate_stress = fail['Ultimate']
+fracture_stress = fail['Fracture Stress']
+
+#adding calculations for ductility
+ultimate_strain = fail['Ultimate Strain'] + plastic_strain
+fracture_strain = fail['Fracture Strain'] + plastic_strain
+
+
+
 
 
 plt.figure()
@@ -438,22 +460,46 @@ plt.plot(cycle_strain[400:], cycle_stress[400:])
 plt.plot(fail_strain+plastic_strain, fail_stress)
 
 # generating 100 points from 0 to 0.1 for the x values of the youngs modulus
-x_youngs = np.linspace(0, 0.1 , 100)
+x_youngs = np.linspace(0, 0.5 , 100)
 # generating the y values of the youngs modulus line
 y_youngs = youngs * x_youngs
-# plotting the youngs modulus, rounding to nearest whole number
+b_failure = fracture_stress - youngs*fracture_strain
+y_failure = youngs * x_youngs + b_failure
+total_deformation = -b_failure/youngs
+
+# plotting the youngs modulus and plastic deformation thing
 plt.plot(x_youngs, y_youngs)
+plt.plot(x_youngs, y_failure)
+#plotting the ultimate tensiles strength
+plt.scatter(ultimate_strain, ultimate_stress)
+# Adding the arrow for ultimate tensile
+plt.annotate(f"Ultimate tensile stress \n {ultimate_stress:.0f} MPa",
+             (ultimate_strain, ultimate_stress),
+             xytext=(ultimate_strain - 0.1*ultimate_strain, 
+                     ultimate_stress-.2*ultimate_stress),
+             ha='center',
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
+
+plt.annotate(f"Plastic strain \n {total_deformation:.3f}",
+             (total_deformation, 0),
+             xytext=(total_deformation - 0.1*ultimate_strain, 
+                     0.2*ultimate_stress),
+             ha='right',
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
+
 
 
 plt.title('Specimen 2 15% reduction')
 plt.xlabel('Strain')
 plt.ylabel('Stress (MPa)')
-plt.xlim(0)
+plt.xlim(0, 1.25 * total_deformation)
 plt.ylim(0 , 1.1*ultimate_stress)
 plt.show()
 
 del cycle, cycle_strain, cycle_stress, fail, fail_strain, fail_stress
 del plastic_strain, ultimate_stress, x_youngs, y_youngs, youngs
+del y_failure, total_deformation, fracture_stress, fracture_strain
+del b_failure
 
 #%% Specimen 3 combined
 
@@ -467,29 +513,54 @@ fail_strain = fail['Strain']
 youngs = cycle['Youngs']
 plastic_strain = cycle['Plastic Strain']
 ultimate_stress = fail['Ultimate']
+ultimate_strain = fail['Ultimate Strain'] + plastic_strain
+fracture_strain = fail['Fracture Strain'] + plastic_strain
+fracture_stress = fail['Fracture Stress']
 
 plt.figure()
 #plotting only past the first 400 points of the cycle for the youngs modulus
 plt.plot(cycle_strain[400:], cycle_stress[400:])
 plt.plot(fail_strain+plastic_strain, fail_stress)
 
-# generating 100 points from 0 to 0.1 for the x values of the youngs modulus
-x_youngs = np.linspace(0, 0.1 , 100)
+x_youngs = np.linspace(0, 0.5 , 100)
 # generating the y values of the youngs modulus line
 y_youngs = youngs * x_youngs
-# plotting the youngs modulus, rounding to nearest whole number
+b_failure = fracture_stress - youngs*fracture_strain
+y_failure = youngs * x_youngs + b_failure
+total_deformation = -b_failure/youngs
+
+# plotting the youngs modulus and plastic deformation thing
 plt.plot(x_youngs, y_youngs)
+plt.plot(x_youngs, y_failure)
+#plotting the ultimate tensiles strength
+plt.scatter(ultimate_strain, ultimate_stress)
+# Adding the arrow
+plt.annotate(f"Ultimate tensile stress \n {ultimate_stress:.0f} MPa",
+             (ultimate_strain, ultimate_stress),
+             xytext=(ultimate_strain - 0.1*ultimate_strain, 
+                     ultimate_stress-.2*ultimate_stress),
+             ha='center',
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
+
+plt.annotate(f"Plastic strain \n {total_deformation:.3f}",
+             (total_deformation, 0),
+             xytext=(total_deformation - 0.1*ultimate_strain, 
+                     0.2*ultimate_stress),
+             ha='right',
+             arrowprops=dict(facecolor='black', shrink=0.01, width= .5))
 
 
 plt.title('Sample 3 30% reduction ')
 plt.xlabel('Strain')
 plt.ylabel('Stress (MPa)')
-plt.xlim(0)
+plt.xlim(0, 1.25 * total_deformation)
 plt.ylim(0 , 1.1*ultimate_stress)
 plt.show()
 
 del cycle, cycle_strain, cycle_stress, fail, fail_strain, fail_stress
 del plastic_strain, ultimate_stress, x_youngs, y_youngs, youngs
+del y_failure, total_deformation, fracture_stress, fracture_strain
+del b_failure
 #%% plotting combined
 
 plt.figure()
