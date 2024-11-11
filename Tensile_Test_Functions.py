@@ -23,8 +23,8 @@ def youngs_and_strain_correction(stress, strain):
     start, end = elastic_mid-200, elastic_mid+200
     # doing a linear regression
     # slope is the youngs modulus
-    slope, intercept, r_value, p_value, std_err = linregress(strain[start:end],
-                                                            stress[start:end])
+    array = [strain[start:end].tolist(), stress[start:end].tolist()]
+    slope, intercept, r_value, p_value, std_err = linregress(array)
     
     # - intercept/slope = x
     offset = -intercept/slope
@@ -63,3 +63,5 @@ def plastic_strain(youngs, stress, strain):
     plastic_strain = -offset/youngs
 
     return plastic_strain
+
+    

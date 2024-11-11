@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['Tensile_Test_Functions.py', 'Lab 5\\Lab5 creep data analysis.py']
+recent_files = ['Tensile_Test_Functions.py', 'Lab 2\\Brass CW analysis.py', 'Lab 3\\Data Analysis.py']
 
 [main]
 version = 0.2.0
