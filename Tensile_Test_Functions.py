@@ -49,7 +49,7 @@ def offset_yield_strength(stress, strain, youngs):
     # me wrong stuff???
     yield_strength = y_line[intercept[-1]]
     yield_strain = x_area[intercept[-1]]
-    return yield_strength, yield_strain
+    return yield_strength, yield_strain, offset
   
 def plastic_strain(youngs, stress, strain):
 
